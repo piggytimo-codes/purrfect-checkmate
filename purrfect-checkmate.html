@@ -63,20 +63,21 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 2px;
             margin-bottom: 20px;
         }
         
-        .turn-king-svg {
+        .turn-king-svg img {
             position: relative;
-            width: 50px;
-            height: 50px;
+            width: 75px;
+            height: 75px;
             transition: transform 0.3s ease-in-out;
             text-align: center;
+            object-fit: contain;
         }
         
         .turn-king-svg.active-turn {
-            transform: scale(1.2);
+            transform: scale(1.25);
         }
 
         .winner-text {
@@ -132,6 +133,8 @@
             user-select: none;
             cursor: pointer;
             transition: background-color 0.2s ease-in-out;
+            aspect-ratio: 1 / 1;
+            box-sizing: border-box;
         }
 
         .square.light {
@@ -158,8 +161,8 @@
         }
         
         .piece {
-            width: 90%;
-            height: 90%;
+            width: 85%;
+            height: 85%;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -340,8 +343,8 @@
         }
 
         .captured-piece {
-            width: 30px;
-            height: 30px;
+            width: 20px;
+            height: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -356,17 +359,7 @@
         </div>
         <div class="turn-indicator">
             <span id="turn-red-king" class="turn-king-svg">
-                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="red-team">
-                    <rect x="25" y="40" width="50" height="35" rx="5" class="svg-piece-base"/>
-                    <path d="M 30 40 C 20 20, 80 20, 70 40" class="svg-piece-base"/>
-                    <path d="M45 20 L55 20 M50 15 L50 25" class="svg-piece-details" stroke="#333" stroke-width="3"/>
-                    <circle cx="50" cy="20" r="15" class="svg-piece-base"/>
-                    <path d="M45 25 Q 50 20, 55 25 M45 25 Q 50 30, 55 25" class="svg-piece-details"/>
-                    <circle cx="45" cy="27" r="2" class="svg-piece-details"/>
-                    <circle cx="55" cy="27" r="2" class="svg-piece-details"/>
-                    <path d="M48 35 Q 50 50, 52 35" class="svg-piece-details"/>
-                    <text x="50" y="85" text-anchor="middle" class="piece-text">King</text>
-                </svg>
+                <img src="https://images2.imgbox.com/db/fc/kA8QAjp1_o.png" alt="Red Mofusand King">
                 <div class="winner-text">
                     <svg class="winner-crown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
                         <path d="M 10 20 Q 20 10, 30 20 L 40 20 L 35 30 L 40 40 L 10 40 L 15 30 L 10 20 Z" />
@@ -378,17 +371,7 @@
                 </div>
             </span>
             <span id="turn-blue-king" class="turn-king-svg">
-                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="blue-team">
-                    <rect x="25" y="40" width="50" height="35" rx="5" class="svg-piece-base"/>
-                    <path d="M 30 40 C 20 20, 80 20, 70 40" class="svg-piece-base"/>
-                    <path d="M45 20 L55 20 M50 15 L50 25" class="svg-piece-details" stroke="#333" stroke-width="3"/>
-                    <circle cx="50" cy="20" r="15" class="svg-piece-base"/>
-                    <path d="M45 25 Q 50 20, 55 25 M45 25 Q 50 30, 55 25" class="svg-piece-details"/>
-                    <circle cx="45" cy="27" r="2" class="svg-piece-details"/>
-                    <circle cx="55" cy="27" r="2" class="svg-piece-details"/>
-                    <path d="M48 35 Q 50 50, 52 35" class="svg-piece-details"/>
-                    <text x="50" y="85" text-anchor="middle" class="piece-text">King</text>
-                </svg>
+                <img src="https://images2.imgbox.com/6c/82/6gmpBiC8_o.png" alt="Blue Mofusand King">
                 <div class="winner-text">
                     <svg class="winner-crown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
                         <path d="M 10 20 Q 20 10, 30 20 L 40 20 L 35 30 L 40 40 L 10 40 L 15 30 L 10 20 Z" />
@@ -409,10 +392,6 @@
             <button id="undo-btn">Undo</button>
         </div>
         
-        <div id="captured-pieces-container">
-            <div id="captured-red"></div>
-            <div id="captured-blue"></div>
-        </div>
     </div>
     
     <!-- Pawn Promotion Modal -->
@@ -458,72 +437,36 @@
             'b': []
         };
 
-        // SVG representations of Mofusand pieces
-        const pieceSVGs = {
-            // All SVGs are simplified for demonstration and to keep the code self-contained.
-            // In a real project, these would be more complex and detailed.
-            'pawn': (color) => `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="${color}-team">
-                <circle cx="50" cy="70" r="25" class="svg-piece-base"/>
-                <circle cx="50" cy="40" r="15" class="svg-piece-base"/>
-                <path d="M40 30 C 35 25, 65 25, 60 30" class="svg-piece-details"/>
-                <path d="M45 40 Q 50 35, 55 40 M45 40 Q 50 45, 55 40" class="svg-piece-details"/>
-                <circle cx="45" cy="42" r="2" class="svg-piece-details"/>
-                <circle cx="55" cy="42" r="2" class="svg-piece-details"/>
-                <path d="M48 50 Q 50 55, 52 50" class="svg-piece-details"/>
-                ${color === 'red' ? '<path d="M50 20 C 60 5, 75 10, 70 25 L 30 25 C 25 10, 40 5, 50 20" class="svg-piece-red"/>' : ''}
-                ${color === 'blue' ? '<path d="M50 20 C 60 5, 75 10, 70 25 L 30 25 C 25 10, 40 5, 50 20" class="svg-piece-blue"/>' : ''}
-                <text x="50" y="80" text-anchor="middle" class="piece-text">Pawn</text>
-            </svg>`,
-            'rook': (color) => `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="${color}-team">
-                <rect x="30" y="30" width="40" height="40" rx="5" class="svg-piece-base"/>
-                <circle cx="50" cy="20" r="15" class="svg-piece-base"/>
-                <rect x="35" y="10" width="30" height="10" class="svg-piece-base"/>
-                <path d="M45 25 Q 50 20, 55 25 M45 25 Q 50 30, 55 25" class="svg-piece-details"/>
-                <circle cx="45" cy="27" r="2" class="svg-piece-details"/>
-                <circle cx="55" cy="27" r="2" class="svg-piece-details"/>
-                <path d="M48 35 Q 50 40, 52 35" class="svg-piece-details"/>
-                <text x="50" y="85" text-anchor="middle" class="piece-text">Rook</text>
-            </svg>`,
-            'knight': (color) => `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="${color}-team">
-                <path d="M 30 80 L 35 60 L 50 40 L 70 50 L 65 70 L 60 80 Z" class="svg-piece-base"/>
-                <path d="M 50 40 Q 60 20, 75 30 L 70 40 L 50 40 Z" class="svg-piece-base"/>
-                <path d="M 55 45 Q 60 40, 65 45 M 55 45 Q 60 50, 65 45" class="svg-piece-details"/>
-                <circle cx="60" cy="47" r="2" class="svg-piece-details"/>
-                <text x="50" y="90" text-anchor="middle" class="piece-text">Knight</text>
-            </svg>`,
-            'bishop': (color) => `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="${color}-team">
-                <circle cx="50" cy="65" r="20" class="svg-piece-base"/>
-                <path d="M40 50 Q 50 30, 60 50" class="svg-piece-base"/>
-                <circle cx="50" cy="40" r="10" class="svg-piece-base"/>
-                <path d="M45 42 Q 50 37, 55 42 M45 42 Q 50 47, 55 42" class="svg-piece-details"/>
-                <circle cx="45" cy="44" r="2" class="svg-piece-details"/>
-                <circle cx="55" cy="44" r="2" class="svg-piece-details"/>
-                <path d="M48 52 Q 50 57, 52 52" class="svg-piece-details"/>
-                <text x="50" y="85" text-anchor="middle" class="piece-text">Bishop</text>
-            </svg>`,
-            'queen': (color) => `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="${color}-team">
-                <rect x="25" y="40" width="50" height="35" rx="5" class="svg-piece-base"/>
-                <path d="M 30 40 C 20 20, 80 20, 70 40" class="svg-piece-base"/>
-                <circle cx="50" cy="20" r="15" class="svg-piece-base"/>
-                <path d="M45 25 Q 50 20, 55 25 M45 25 Q 50 30, 55 25" class="svg-piece-details"/>
-                <circle cx="45" cy="27" r="2" class="svg-piece-details"/>
-                <circle cx="55" cy="27" r="2" class="svg-piece-details"/>
-                <path d="M48 35 Q 50 40, 52 35" class="svg-piece-details"/>
-                ${color === 'red' ? '<circle cx="50" cy="20" r="5" fill="#EF6F6C"/>' : ''}
-                ${color === 'blue' ? '<circle cx="50" cy="20" r="5" fill="#A2D2FF"/>' : ''}
-                <text x="50" y="85" text-anchor="middle" class="piece-text">Queen</text>
-            </svg>`,
-            'king': (color) => `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="${color}-team">
-                <rect x="25" y="40" width="50" height="35" rx="5" class="svg-piece-base"/>
-                <path d="M 30 40 C 20 20, 80 20, 70 40" class="svg-piece-base"/>
-                <path d="M45 20 L55 20 M50 15 L50 25" class="svg-piece-details" stroke="#333" stroke-width="3"/>
-                <circle cx="50" cy="20" r="15" class="svg-piece-base"/>
-                <path d="M45 25 Q 50 20, 55 25 M45 25 Q 50 30, 55 25" class="svg-piece-details"/>
-                <circle cx="45" cy="27" r="2" class="svg-piece-details"/>
-                <circle cx="55" cy="27" r="2" class="svg-piece-details"/>
-                <path d="M48 35 Q 50 50, 52 35" class="svg-piece-details"/>
-                <text x="50" y="85" text-anchor="middle" class="piece-text">King</text>
-            </svg>`,
+        // Image URLs for Mofusand pieces 
+        // To edit or delete gallery https://imgbox.com/gallery/edit/MQ000FMeVm/cjC8kfoQd2nTAhbF
+        const pieceImageURLs = {
+            // Replace these placeholder URLs with your actual image link addresses
+            'red': {
+                'pawn': 'https://images2.imgbox.com/8d/f9/lybUiYKf_o.png',
+                'rook': 'https://images2.imgbox.com/6b/8e/osuKDhsl_o.png',
+                'knight': 'https://images2.imgbox.com/9b/2f/mnR7jn8J_o.png',
+                'bishop': 'https://images2.imgbox.com/10/56/EUoNIlOe_o.png',
+                'queen': 'https://images2.imgbox.com/80/39/yjZ2nMXP_o.png',
+                'king': 'https://images2.imgbox.com/db/fc/kA8QAjp1_o.png',
+            },
+            'blue': {
+                'pawn': 'https://images2.imgbox.com/f9/e3/vdiQ4Hvy_o.png',
+                'rook': 'https://images2.imgbox.com/08/9f/DDWNdmYm_o.png',
+                'knight': 'https://images2.imgbox.com/07/73/OZer33Mw_o.png',
+                'bishop': 'https://images2.imgbox.com/63/4f/BDdOlcVb_o.png',
+                'queen': 'https://images2.imgbox.com/36/93/Bmz4Nc9M_o.png',
+                'king': 'https://images2.imgbox.com/6c/82/6gmpBiC8_o.png',
+            }
+        };
+
+        // HTML representations of Mofusand pieces using <img> tags
+        const pieceSVGs = { // The name can remain 'pieceSVGs' for compatibility, or you can rename it to 'pieceHTML'
+            'pawn': (color) => `<img src="${pieceImageURLs[color]['pawn']}" alt="${color} pawn" class="piece-image ${color}-team">`,
+            'rook': (color) => `<img src="${pieceImageURLs[color]['rook']}" alt="${color} rook" class="piece-image ${color}-team">`,
+            'knight': (color) => `<img src="${pieceImageURLs[color]['knight']}" alt="${color} knight" class="piece-image ${color}-team">`,
+            'bishop': (color) => `<img src="${pieceImageURLs[color]['bishop']}" alt="${color} bishop" class="piece-image ${color}-team">`,
+            'queen': (color) => `<img src="${pieceImageURLs[color]['queen']}" alt="${color} queen" class="piece-image ${color}-team">`,
+            'king': (color) => `<img src="${pieceImageURLs[color]['king']}" alt="${color} king" class="piece-image ${color}-team">`,
         };
         
         // Piece animation logic
